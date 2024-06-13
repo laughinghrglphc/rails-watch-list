@@ -1,9 +1,19 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+require 'rest-client'
+require 'json'
+
+API_URL = 'https://tmdb.lewagon.com/movie/top_rated'
+BASE_IMAGE_URL = 'https://image.tmdb.org/t/p/w500'
+
+response = RestClient.get(API_URL)
+
+data = JSON.parse(response.body)["results"]
+
+data.each do |item|
+  poster_link = "#{BASE_IMAGE_URL}#{item['poster_path']}"
+  Movie.create!(
+    title: item['title'],
+    overview: item['overview'],
+    rating: item['vote_average'],
+    poster_url: poster_link
+  )
+end
